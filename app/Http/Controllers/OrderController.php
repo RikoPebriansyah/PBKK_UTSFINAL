@@ -4,94 +4,43 @@ namespace App\Http\Controllers;
 
 use App\Models\Order;
 use Illuminate\Http\Request;
-use Illuminate\Http\JsonResponse;
-use Illuminate\Database\Eloquent\ModelNotFoundException;
 
 class OrderController extends Controller
 {
-    public function index(): JsonResponse
+    public function index()
     {
-
-        $dataOrder = Order::all();
-        return response()->json($dataOrder, 200);
+        return Order::with('orderItems')->get();
     }
 
-    public function show($id): JsonResponse
-    {
-        try {
-            $order = Order::findOrFail($id);
-            return response()->json($order, 200);
-        } catch (ModelNotFoundException $e) {
-            return response()->json(['message' => 'Orders tidak ditemukan'], 404);
-        }
-    }
-
-    // Menambahkan user baru
-    public function store(Request $request): JsonResponse
+    public function store(Request $request)
     {
         $request->validate([
-            'customer_id' => 'required|string|max:255',
-            'id_barang' => 'required|string|max:255',
-            'order_date' => 'required|string|date',
-            'jumlah_barang' => 'required|integer',
-            'total' => 'required|integer',
+            'order_id' => 'required|string|unique:orders,order_id',
+            'customer_id' => 'required|exists:customers,customer_id',
+            'order_date' => 'required|date',
+            'total_amount' => 'required|integer',
+            'status' => 'required|string',
         ]);
 
-        $order = Order::create([
-            'customer_id' => $request->customer_id,
-            'id_barang' => $request->id_barang,
-            'order_date' => $request->order_date,
-            'jumlah_barang' => $request->jumlah_barang,
-            'total' => $request->total,
-        ]);
-
-
-        return response()->json([
-            'message' => 'Data order berhasil ditambahkan.',
-            'data' => $order
-        ], 201);
+        return Order::create($request->all());
     }
 
-    // Mengupdate data user
-    public function update(Request $request, $id): JsonResponse
+    public function show($id)
     {
-        try {
-            $order = Order::findOrFail($id);
-
-            $request->validate([
-                'customer_id' => 'sometimes|string|max:255',
-                'id_barang' => 'sometimes|string|max:255',
-                'order_date' => 'sometimes|string|date',
-                'jumlah_barang' => 'sometimes|integer',
-                'total' => 'sometimes|integer',
-            ]);
-
-            // Hanya update field yang dikirim
-            $data = $request->only(['customer_id', 'id_barang', 'order_date', 'jumlah_barang', 'total']);
-
-            $order->update($data);
-
-
-            return response()->json([
-                'message' => $order->wasChanged()
-                    ? 'Data order berhasil diupdate.'
-                    : 'Tidak ada perubahan pada data stock.',
-                'data' => $order
-            ], 200);
-        } catch (ModelNotFoundException $e) {
-            return response()->json(['message' => 'Order tidak ditemukan'], 404);
-        }
+        return Order::with('orderItems')->findOrFail($id);
     }
 
-    public function destroy($id): JsonResponse
+    public function update(Request $request, $id)
     {
-        try {
-            $order = Order::findOrFail($id);
-            $order->delete();
+        $order = Order::findOrFail($id);
+        $order->update($request->all());
 
-            return response()->json(['message' => 'Order berhasil dihapus.']);
-        } catch (ModelNotFoundException $e) {
-            return response()->json(['message' => 'Order tidak ditemukan.'], 404);
-        }
+        return $order;
+    }
+
+    public function destroy($id)
+    {
+        Order::destroy($id);
+        return response()->json(['message' => 'Order deleted']);
     }
 }

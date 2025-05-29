@@ -10,6 +10,10 @@ use App\Http\Controllers\OrderController;
 use App\Http\Controllers\StockController;
 use App\Http\Controllers\UserController;
 
+use App\Http\Controllers\CategoryController;
+use App\Http\Controllers\ProductController;
+
+use App\Http\Controllers\OrderItemController;
 
 Route::post('/login', [AuthController::class, 'login']);
 
@@ -25,10 +29,12 @@ Route::middleware('auth:sanctum')->group(function () {
     // });
 
     Route::apiResource('user', UserController::class);
-    Route::apiResource('customer', CustomerController::class);
-    Route::apiResource('barang', BarangController::class);
-    Route::apiResource('stock', StockController::class);
-    Route::apiResource('order', OrderController::class);
+   Route::apiResource('customers', CustomerController::class);
+Route::apiResource('categories', CategoryController::class);
+Route::apiResource('products', ProductController::class);
+Route::apiResource('orders', OrderController::class);
+Route::apiResource('order-items', OrderItemController::class);
+
    
 });
 

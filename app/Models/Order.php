@@ -3,36 +3,23 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Concerns\HasUlids;
-use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class Order extends Model
 {
-    use HasUlids;
-    
-    protected $table = 'order';
-    
-    protected $fillable = [
-        'customer_id',
-        'id_barang',
-        'order_date',
-        'jumlah_barang',
-        'total',
-    ];
+    protected $primaryKey = 'order_id';
+    public $incrementing = false;
+    protected $keyType = 'string';
 
-    protected function casts(): array
+    protected $fillable = ['order_id', 'customer_id', 'order_date', 'total_amount', 'status'];
+
+    public function customer()
     {
-        return [
-            'customer_id' => 'string',
-            'id_barang' => 'string',
-        ];
+        return $this->belongsTo(Customer::class, 'customer_id', 'customer_id');
     }
 
-    public function customer():BelongsTo{
-        return $this->belongsTo(Customer::class, 'customer_id');
-    }
-
-    public function barang():BelongsTo{
-        return $this->belongsTo(Barang::class, 'barang_id');
+    public function orderItems()
+    {
+        return $this->hasMany(OrderItem::class, 'order_id', 'order_id');
     }
 }
+
